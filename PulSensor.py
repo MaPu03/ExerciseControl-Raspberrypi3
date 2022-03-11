@@ -1,7 +1,8 @@
-from GetPulse import Getpulse
+from GetPulse import GetPulse
 import time
+import requests
 
-p = HeartBeat()
+p = GetPulse()
 p.startAsyncBPM()
 
 try:
@@ -11,6 +12,9 @@ try:
             print("BPM: %d" % bpm)
         else:
             print("No Heartbeat detected")
+        
+        envio = requests.get("https://api.thingspeak.com/update?api_key=NLCJHRS7IXQKW30Y&field1="+str(bpm))
         time.sleep(1)
 except:
     p.stopAsyncBPM()
+

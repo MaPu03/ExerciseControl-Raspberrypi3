@@ -2,7 +2,7 @@ import time
 import threading
 from MCP3008 import MCP3008
 
-class HeartBeat:# definicion de la clase sensor
+class GetPulse:# definicion de la clase sensor
     def __init__(self, channel = 0, bus = 0, device = 0): #definicon parametros entrada adc
         self.channel = channel
         self.BPM = 0
@@ -26,13 +26,14 @@ class HeartBeat:# definicion de la clase sensor
         pulses = [0] * 10         # Almacenar ultimos 10 valores
         sampleCounter = 0         # tiempo por pulso
         lastBeatTime = 0          # tiempo ultimo pulso
-        Midpoint = 512            # punto medio de pulso
-        High,Low    = 512         # pico superior e inferior / inicializacion
-        thresh = 525              # detección de pulso
+        Midpoint = 500            # punto medio de pulso
+        High = 500         # pico superior e inferior / inicializacion
+        Low = 500
+        thresh = 510              # detección de pulso
         amp = 100                 # used to hold amplitude of pulse waveform, seeded
         firstBeat = True          # para generar el array con un dato valido
         otherBeat = False         # 
-        Period = 600              # intervalo de tiempo entre latidos
+        Period = 400              # intervalo de tiempo entre latidos
         Pulse = False             # "True" cuando se detecta ritmo constante, de lo contrario "False". 
         lastTime = int(time.time()*1000)
         
@@ -83,11 +84,13 @@ class HeartBeat:# definicion de la clase sensor
                 Pulse = False                           # reset pulse
                 amp = High - Low                            # get amplitude of the pulse wave
                 thresh = amp/2 + Low                      # se ajusta el valor del 50% de la amplitud
-                High,Low = thresh                              # reset these for next time
-
+                High = thresh                              # reset these for next time
+                Low = thresh
 
             if N > 2500:                                # si pasan 2.5 sin detectar beat
-                thresh,High,Low = 512                   # se ajustan por defecto
+                thresh = 512                   # se ajustan por defecto
+                High = 512
+                Low = 512
                 lastBeatTime = sampleCounter            # se ajusta valor de ultimo beat        
                 firstBeat = True                        # para detectar un nuevo beat
                 otherBeat = False                      
