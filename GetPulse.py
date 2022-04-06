@@ -6,6 +6,7 @@ class GetPulse:# definicion de la clase sensor
     def __init__(self, channel = 0, bus = 0, device = 0): #definicon parametros entrada adc
         self.channel = channel
         self.BPM = 0
+        self.Signal =0
         self.adc = MCP3008(bus, device)
         
     # Iniciar GetBPM loop
@@ -26,10 +27,10 @@ class GetPulse:# definicion de la clase sensor
         pulses = [0] * 10         # Almacenar ultimos 10 valores
         sampleCounter = 0         # tiempo por pulso
         lastBeatTime = 0          # tiempo ultimo pulso
-        Midpoint = 500            # punto medio de pulso
-        High = 500         # pico superior e inferior / inicializacion
-        Low = 500
-        thresh = 510              # detección de pulso
+        Midpoint = 512            # punto medio de pulso
+        High = 512         # pico superior e inferior / inicializacion
+        Low = 512
+        thresh = 520            # detección de pulso
         amp = 100                 # used to hold amplitude of pulse waveform, seeded
         firstBeat = True          # para generar el array con un dato valido
         otherBeat = False         # 
@@ -39,7 +40,7 @@ class GetPulse:# definicion de la clase sensor
         
         while not self.thread.stopped: # mientras thread.stopped= "False"
         
-            Signal = self.adc.read(self.channel)# se llama la funcion read de la libreria
+            self.Signal = self.adc.read(self.channel)# se llama la funcion read de la libreria
             currentTime = int(time.time()*1000) # obtener current time miliseconds
             
             sampleCounter += currentTime - lastTime # aumenta el conteo while
@@ -48,16 +49,16 @@ class GetPulse:# definicion de la clase sensor
             N = sampleCounter - lastBeatTime # 
 
             #---- Encontrar los picos de la onda -----
-            if Signal < thresh and N > (Period/5.0)*3:     # evitar ruido, esperando 3/5 desde el ultimo latido
-                if Signal < Midpoint:                      
-                    Low = Signal                          # define el minimo valor de la onda
+            if self.Signal < thresh and N > (Period/5.0)*3:     # evitar ruido, esperando 3/5 desde el ultimo latido
+                if self.Signal < Midpoint:                      
+                    Low = self.Signal                          # define el minimo valor de la onda
 
-            if Signal > thresh:  # define el minimo valor de la onda
-                High = Signal
+            if self.Signal > thresh:  # define el minimo valor de la onda
+                High = self.Signal
 
             # signal surges up in value every time there is a pulse
             if N > 250:                                 # evitar ruido
-                if Signal > thresh and Pulse == False and N > (Period/5.0)*3:       
+                if self.Signal > thresh and Pulse == False and N > (Period/5.0)*3:       
                     Pulse = True                        # considerando primer pulso
                     Period = sampleCounter - lastBeatTime  # se ajusta el periodo de los pulsos
                     lastBeatTime = sampleCounter        # se define tiempo del ultimo pulso
@@ -80,7 +81,7 @@ class GetPulse:# definicion de la clase sensor
                     PeriodTotal /= len(pulses)           # se halla el promedio 
                     self.BPM = 60000/PeriodTotal         # se encuentran los pulsos por minuto (60*100ms) 
 
-            if Signal < thresh and Pulse == True:       # cuando se encuentre pico negativo
+            if self.Signal < thresh and Pulse == True:       # cuando se encuentre pico negativo
                 Pulse = False                           # reset pulse
                 amp = High - Low                            # get amplitude of the pulse wave
                 thresh = amp/2 + Low                      # se ajusta el valor del 50% de la amplitud
